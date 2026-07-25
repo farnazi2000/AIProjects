@@ -11,9 +11,8 @@ python3 -m venv .venv
 source .venv/bin/activate - make sure you are in the right directory.
 or source /Users/farnazmozhgani/Desktop/Incident-AI/.venv/bin/activate
 python -m pip install -r requirements.txt
-.venv/bin/python agent_framework.py "Service: Payments\nHigh error rate after deployment" --source text
+# Write an Investigation Report
 # Or submit a .pdf / .txt file:
-.venv/bin/python agent_framework.py --file ./incident.pdf
 ```
 
 The default database is `data/incidents.db` (SQLite: free, local, and no account required). It is created automatically.
