@@ -1,3 +1,7 @@
+<img width="828" height="1024" alt="image" src="https://github.com/user-attachments/assets/3550296e-dd5d-4a5f-a592-dbfe52a543a3" />
+
+
+
 # Incident AI
 
 LangGraph workflow matching the supplied design:
