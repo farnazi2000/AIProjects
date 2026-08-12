@@ -214,6 +214,12 @@ class IncidentRepository:
                 "evidence": [("Queue dashboard", "Pending jobs rose from 2,000 to 1,200,000."), ("Worker metrics", "Successful jobs per minute dropped 72%."), ("Dead-letter queue", "Malformed locale payloads retried more than 20 times.")],
             },
             {
+            "key": "checkout-db-pool-exhaustion", "title": "Checkout service timeouts due to connection leak", "severity": "critical", "system": "Checkout Service",
+            "details": "A minor release introduced a database connection leak in the payment validation flow, exhausting the connection pool and causing transaction timeouts for users.", "status": "resolved",
+            "history": [("detected", "High error rate and latency alerts triggered for the /checkout endpoint."), ("mitigated", "Rolled back the checkout service to the previous release and restarted DB proxies to drop stuck connections."), ("resolved", "Patched the missing connection closure, added connection leak detection to the CI pipeline, and redeployed.")],
+            "evidence": [("APM Metrics", "/checkout endpoint p99 latency spiked from 150ms to over 30 seconds."), ("Database Monitoring", "Active database connections hit the hard limit of 2000 at 14:05 UTC."), ("Application Logs", "Repeated 'Timeout: unable to acquire connection from pool' errors observed.")]
+            },
+            {
                 "key": "public-api-dns-demo", "title": "Public API unavailable from two regions", "severity": "high", "system": "Public API",
                 "details": "Clients in two regions could not resolve the public API hostname after a DNS record change during a traffic-routing update.", "status": "resolved",
                 "history": [("detected", "Synthetic checks failed in us-east and eu-west."), ("mitigated", "Restored the prior DNS record and reduced TTL for verification."), ("resolved", "Corrected routing automation validation and added multi-region DNS checks.")],
