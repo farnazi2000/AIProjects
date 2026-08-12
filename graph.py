@@ -5,6 +5,7 @@ import re
 from typing import Literal
 
 from langgraph.graph import END, START, StateGraph
+from streamlit import status
 
 from .llm import LLMClient
 from .models import InvestigationState
@@ -38,7 +39,19 @@ def build_investigation_graph(repository: IncidentRepository):
         return "existing" if state["is_existing"] else "new"
 
     def create(state: InvestigationState) -> dict:
-        return {"incident_id": tools.create_incident_record(state["incident"]), "iteration": 0}
+        incident_id = tools.create_incident_record(state["incident"])
+        tools.update_incident_status(incident_id, "investigating", note="Investigation graph started")
+        return {"incident_id": incident_id, "iteration": 0}
+    
+    def finalize_status(state: InvestigationState) -> dict:
+        if state.get("missing_information"):
+            status = "needs_information"
+            note = "Report generated but investigation incomplete: " + "; ".join(state["missing_information"])
+        else:
+            status = "resolved"
+            note = "Investigation complete, report generated"
+        tools.update_incident_status(state["incident_id"], status, note=note)
+        return {"status": status}
 
     def get_history(state: InvestigationState) -> dict:
         return {"history": tools.retrieve_history(state["incident_id"]), "iteration": state.get("iteration", 0)}
@@ -92,6 +105,7 @@ def build_investigation_graph(repository: IncidentRepository):
     workflow.add_node("intake", intake)
     workflow.add_node("lookup", lookup)
     workflow.add_node("create", create)
+    workflow.add_node("finalize_status", finalize_status)
     workflow.add_node("history", get_history)
     workflow.add_node("plan", plan)
     workflow.add_node("retrieve", retrieve)
@@ -102,6 +116,8 @@ def build_investigation_graph(repository: IncidentRepository):
     workflow.add_edge("intake", "lookup")
     workflow.add_conditional_edges("lookup", route_incident, {"existing": "history", "new": "create"})
     workflow.add_edge("create", "history")
+    workflow.add_edge("report", "finalize_status")
+    workflow.add_edge("finalize_status", END)
     workflow.add_edge("history", "plan")
     workflow.add_edge("plan", "retrieve")
     workflow.add_edge("retrieve", "analyze")

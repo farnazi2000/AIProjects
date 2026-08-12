@@ -38,3 +38,7 @@ class IncidentTools:
 
     def persist_report(self, incident_id: int, report: str) -> None:
         self.repository.save_report(incident_id, report)
+    def update_incident_status(self, incident_id: int, status: str, note: str | None = None) -> None:
+        """Transition an incident's status (e.g. investigating, mitigated,
+        resolved, closed) and log the change to history."""
+        self.repository.update_status(incident_id, status, note)
